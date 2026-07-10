@@ -28,7 +28,7 @@ export default function Admin() {
       <div
         role="tablist"
         aria-label="Adminsektioner"
-        className="mt-6 flex flex-wrap gap-2 border-b-2 border-gray-200"
+        className="scrollbar-hide mt-6 flex gap-2 overflow-x-auto border-b-2 border-gray-200"
       >
         {TABS.map((tab) => (
           <button
@@ -39,7 +39,7 @@ export default function Admin() {
             aria-selected={tab.key === activeTab}
             aria-controls={`admin-panel-${tab.key}`}
             onClick={() => setActiveTab(tab.key)}
-            className={`min-h-11 border-b-4 px-5 py-3 text-lg font-semibold transition-colors ${
+            className={`min-h-11 shrink-0 border-b-4 px-5 py-3 text-lg font-semibold transition-colors ${
               tab.key === activeTab
                 ? 'border-accent text-primary'
                 : 'border-transparent text-gray-600 hover:bg-gray-50'

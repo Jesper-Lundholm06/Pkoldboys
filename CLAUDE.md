@@ -141,7 +141,13 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
   (blocket centreras, brödtext vänsterjusterad). Brödtextstycken har ingen egen
   extra breddspärr (utom `LoggaIn`:s avsiktligt smala `max-w-md`-kort).
 - `/admin` flikat (`role="tablist"/"tab"/"tabpanel"`, `useState`), aktiv flik
-  = tunn guldunderkant + marinblå text.
+  = tunn guldunderkant + marinblå text. Flikraden är `overflow-x-auto` +
+  `flex` UTAN `flex-wrap` (varje flik-knapp `shrink-0`) — håller sig på EN
+  rad och blir horisontellt scrollbar på smala skärmar istället för att
+  radbryta oregelbundet. Scrollbaren är visuellt dold via `.scrollbar-hide`
+  (ny klass i `index.css`, `scrollbar-width:none` + dold
+  `::-webkit-scrollbar`) men förblir funktionell — samma mönster kan
+  återanvändas för andra ev. framtida horisontellt scrollbara rader.
 - Filuppladdning (`<input type="file">`): Tailwinds `file:`-variant så
   systemknappen matchar appens knappspråk.
 - `MatchTable`: `<table>` (bredare skärmar) ligger nu i ett eget `.card`
