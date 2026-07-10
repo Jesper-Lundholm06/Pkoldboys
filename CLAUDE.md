@@ -22,7 +22,9 @@ på svenska. Medvetet enkel design — inget flashigt.
 ## Färdplan (11 steg)
 Steg 1–9 klara (skelett, Supabase, publika sidor, nyheter, login/skyddade
 routes, admin-dashboard, medlemssida, bilder+dokument, tillgänglighetspolish).
-Kvar: 10) keep-alive mot Supabase 7-dagars paus, 11) Netlify deploy + domän.
+Steg 11 påbörjat: Netlify SPA-routing (`_redirects` + `netlify.toml`) klar,
+se Mappstruktur + Kända TODO. Kvar: 10) keep-alive mot Supabase 7-dagars
+paus, resten av 11) faktisk Netlify-deploy + domän pkoldboys.se.
 
 ## Mappstruktur
 ```
@@ -58,8 +60,12 @@ src/
                 formatDateTime.ts (sv-SE datum+tid, delad av nyheter/medlemsinlägg)
   router/       AppRouter.tsx
   App.tsx, main.tsx (<App/> i <AuthProvider>), index.css
+public/         _redirects (Netlify SPA-fallback: "/* /index.html 200",
+                kopieras automatiskt av Vite till dist/ vid build)
 supabase/       schema.sql — DB-schema + RLS, körs manuellt i SQL Editor
 .env / .env.example   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+netlify.toml    build-kommando "npm run build", publish "dist", samma
+                SPA-redirect som public/_redirects (bälte+hängslen)
 ```
 
 ## Designtokens (tailwind.config.js + index.css)
@@ -173,6 +179,13 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
 - `@media (prefers-reduced-motion: reduce)` stänger av transitions globalt.
 
 ## Kända TODO / öppna punkter
+- Netlify SPA-routing (`public/_redirects` + `netlify.toml`) är på plats så
+  direktbesök/refresh på undersidor (t.ex. `/logga-in`, `/admin`) inte ger
+  404 i produktion. Verifierat: `npm run build` → `dist/_redirects`
+  innehåller raden korrekt. KVARSTÅR: koppla repot till ett Netlify-projekt
+  och sätta miljövariablerna `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` i
+  Netlifys UI (byggmiljön läser INTE `.env`-filen — den är gitignorad),
+  samt peka domänen pkoldboys.se dit när klubben är redo.
 - ⚠️ Footerns kontakt-e-post (`kontakt@pkoldboys.se`) är en PLACEHOLDER —
   byt till klubbens riktiga e-postadress i `src/components/layout/Footer.tsx`
   när den finns.
