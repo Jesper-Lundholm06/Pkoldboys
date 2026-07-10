@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(rm -f src/App.css src/assets/react.svg src/assets/hero.png)",
+      "Bash(npx tailwindcss *)",
+      "Bash(node -e ' *)",
+      "Bash(npx tsc *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/tavlingar)",
+      "Bash(curl -s http://localhost:5173/src/main.tsx)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(powershell -NoProfile -Command \"Get-ChildItem -Path 'C:\\\\\\\\Users\\\\\\\\u8531\\\\\\\\.claude' -Recurse -Include *.png,*.jpg,*.jpeg -ErrorAction SilentlyContinue | Select-Object FullName,LastWriteTime,Length | Sort LastWriteTime -Descending | Select -First 20\")",
+      "Bash(curl -s -o /dev/null -w \"root:%{http_code}\\\\n\" http://localhost:5174/)",
+      "Bash(curl -s -o /dev/null -w \"test-auth:%{http_code}\\\\n\" http://localhost:5174/test-auth)",
+      "Bash(curl -s http://localhost:5174/src/pages/TestAuth.tsx)",
+      "Bash(curl -s \"http://localhost:5174/@vite/client\" -o /dev/null -w \"vite-client:%{http_code}\\\\n\")",
+      "Bash(curl -s \"http://localhost:5174/src/App.tsx\")",
+      "Bash(curl -s \"http://localhost:5174/src/pages/LoggaIn.tsx\")",
+      "Bash(curl -s \"http://localhost:5174/src/components/auth/ProtectedRoute.tsx\")",
+      "Bash(curl -s -o /dev/null -w \"admin:%{http_code}\\\\n\" http://localhost:5173/admin)",
+      "Bash(curl -s http://localhost:5173/src/components/admin/NewsAdmin.tsx)",
+      "Bash(curl -s http://localhost:5173/src/components/admin/MatchesAdmin.tsx)",
+      "Bash(curl -s \"http://localhost:5174/src/index.css\" -o /tmp/style.css)",
+      "Read(//tmp/**)",
+      "Bash(grep -o \"\\\\.card{[^}]*}\" /tmp/style.css | head -3 *)",
+      "Bash(grep -o \"card\" /tmp/style.css | wc -l *)",
+      "Bash(grep -o \"brightness[^;]*\" /tmp/style9c.css | head -5 *)"
+    ]
+  }
+}

@@ -1,0 +1,162 @@
+# PK Oldboys Bowling — webbplats
+
+VIKTIGT: Läs detta dokument innan du börjar koda i detta repo. Beskriver
+projektets NULÄGE. För historik, se `CHANGELOG.md` (läses ej per session).
+
+Arbetssätt: bygg endast det som uttryckligen är scoped för aktuellt steg —
+lägg aldrig till features i förväg, fråga hellre. Skriv en git-commit per
+utfört steg i stället för att föra logg i detta dokument.
+
+## Om projektet
+Webbplats för seniorbowlingklubben "PK Oldboys Bowling" (grundad 1982).
+Målgrupp: äldre medlemmar → tillgänglighet är högsta prioritet (stor läsbar
+text, hög kontrast, stora klickytor, enkel navigering). Allt UI-innehåll är
+på svenska. Medvetet enkel design — inget flashigt.
+
+## Tech stack
+- React + Vite + TypeScript
+- Tailwind CSS v3 (postcss + autoprefixer, klassisk `tailwind.config.js`)
+- React Router v6+ (react-router-dom)
+- Supabase (auth, DB, storage). SENARE: Netlify-hosting, domän pkoldboys.se
+
+## Färdplan (11 steg)
+Steg 1–9 klara (skelett, Supabase, publika sidor, nyheter, login/skyddade
+routes, admin-dashboard, medlemssida, bilder+dokument, tillgänglighetspolish).
+Kvar: 10) keep-alive mot Supabase 7-dagars paus, 11) Netlify deploy + domän.
+
+## Mappstruktur
+```
+src/
+  assets/       logo.jpg (bred banner 1023×432), affish.png (tävlingsaffisch,
+                OBS stavning utan "c" — filnamnet gavs så av användaren)
+  components/
+    layout/     Layout.tsx, Sidebar.tsx (klickbar logga → "/", villkorlig
+                auth-nav), Footer.tsx (kontakt-mailto + copyright)
+    ui/          MatchTable.tsx (utbytesmatcher, tabellen i ett `.card`),
+                Lightbox.tsx (modal för bildvisning, fokusfälla + Escape),
+                buttonStyles.ts, StateMessage.tsx
+    auth/        ProtectedRoute.tsx (loading/redirect/requireAdmin)
+    admin/       NewsAdmin, MatchesAdmin, MemberPostsAdmin, DocumentsAdmin,
+                 GalleryAdmin — samma CRUD-mönster (delat create+edit-formulär,
+                 lista med Ändra/Ta bort). Gallery/Documents laddar upp till
+                 Storage + insert/delete rad (tar bort både objekt och DB-rad)
+  context/      AuthContext.tsx (useAuth: session/user/loading/isAdmin/signIn/
+                signOut — rörs ALDRIG i designsteg),
+                ToastContext.tsx (useToast — se Designtokens)
+  pages/        Home (nyheter), Tavlingar (affisch + Anmälningslista/
+                Resultat), VaraAktiviteter (Riksserien + matcher, båda i
+                `.card`), Bilder (bucket "gallery", per album, klick öppnar
+                Lightbox — INGEN separat route/ny flik längre), Dokument
+                (bucket "documents", per kategori), Ovrigt (platshållare),
+                LoggaIn (/logga-in), Medlem (/medlem, skyddad, read-only),
+                Admin (/admin, requireAdmin, flikat dashboard)
+  data/         news/matches/memberPosts/documents/galleryImages.ts — ENDAST
+                typer (ingen hårdkodad data, allt mot DB + Storage)
+  lib/          supabase.ts (klient), fetchTable.ts (typad select-helper),
+                formatDateTime.ts (sv-SE datum+tid, delad av nyheter/medlemsinlägg)
+  router/       AppRouter.tsx
+  App.tsx, main.tsx (<App/> i <AuthProvider>), index.css
+supabase/       schema.sql — DB-schema + RLS, körs manuellt i SQL Editor
+.env / .env.example   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+```
+
+## Designtokens (tailwind.config.js + index.css)
+Detta avsnitt ÄR projektets designsystem — uppdatera det när tokens ändras.
+Palett: navy + white + gray, med guld enbart som tunn accent.
+
+- `primary` — EN marinblå ton `#1b3a5b`. Används för: sidebar-bakgrund,
+  footer, toast-bakgrund, länkar och rubriker på vita sidor, sekundärknappars
+  kant/text. Ingen egen mörkare header-nyans — en tunn `border-white/15`-linje
+  avdelar logga-headern från nav-listan.
+- `accent` guld `#d9ac4e` (+ `accent-dark` `#b3872f`) — ENDAST tunn accent:
+  aktiv-nav-vänsterkant (`border-l-2`), `h2`-understrykning (`border-b-2`),
+  knappars nedre kant, fokusring. ALDRIG som fylld knappbakgrund. ALDRIG som
+  ren textfärg (klarar inte WCAG AA på vitt) — bara kant/linje/accent.
+- `danger` `#b3261e` (+ `danger-light` `#fbeceb`) — destruktiva "Ta bort".
+- Grå: Tailwinds inbyggda `gray`-skala (`gray-50`…`gray-700`) för brödtext/
+  datum/kanter/subtila hover-bakgrunder.
+- `background` (sidcanvas) `#f7f6f3` off-white. Kort: `bg-white` + `.card`
+  (`shadow-md`, `rounded-lg`, ingen kant).
+- `text` `#1a1a1a`.
+- Typografi: `h1` = `text-4xl` (36px) fetstil marinblå + `mb-6`, `h2` =
+  `text-2xl` (24px) med tunn guldunderstrykning, brödtext 18px.
+
+Kontrast: alla kombinationer verifierade mot WCAG AA (vit på primary 11.65:1,
+primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
+6.54:1). Guld klarar inte AA som textfärg → används aldrig så.
+
+**Delade UI-primitiver:**
+- `buttonStyles.ts` → `buttonClass('primary'|'secondary'|'danger', extra?)`.
+  primary = marinblå bg + vit text + tunn guld underkant (`border-b-2`).
+  secondary = vit + marinblå kant, hover `bg-gray-50`. danger = vit + tegelröd
+  kant. Alla `rounded-md`, `min-h-11` (44px tapptarget), `shadow-sm`.
+- `StateMessage.tsx` → `variant="info"|"success"|"error"`. info/success
+  gråbaserade (`bg-gray-50`), error rött. Ersätter rå `<p>` för laddar/fel/tomt.
+- `.card`/`.input`/`.label` i `index.css`. `.input` `border-gray-300`, fokus
+  ger marinblå kant.
+- Sidebar-nav: FLATA rader (ingen fylld pill). Panel + rad har samma bg
+  (`primary`); state signaleras av kant/hover/fetstil. Aktiv sida = guld
+  `border-l-2` + `bg-white/5` + fetstil. Hover = `bg-white/10` +
+  dämpad guld `border-accent/50`. Padding `px-3 py-2.5`, inget mellanrum
+  mellan items. Alla nav-element (länkar, "Logga ut"-knapp, logga-länken)
+  har `focus:outline-none` + en egen `focus-visible:outline-2
+  focus-visible:outline-accent` — förhindrar att webbläsarens generella
+  fokusruta (från den globala `:focus-visible`-regeln i `index.css`) ser ut
+  som en permanent låst ruta runt aktiv sida efter musklick i en SPA.
+  Sidebar-loggan är nu en `<Link to="/">` (klickbar hem-länk, samma mål som
+  "PK Oldboys"-länken), något större (`max-w-[190px]`, var 160px).
+- "Inloggad som …": liten dämpad text (`text-sm`, `text-gray-300`, ingen
+  box), med en guld `<hr border-accent>` ovanför som avdelare — gäller BÅDA
+  "admin" och "medlem" (samma villkorslösa `<hr>`, ingen skillnad i koden).
+- Toast (`ToastContext.tsx`): marinblå bg + vit fetstil `text-xl`, centrerad
+  horisontellt, `fixed top-20` (80px — högre värden än `top-4` för att
+  aldrig överlappa `h1`, som börjar strax under `main`s `py-8`-padding),
+  `aria-live="polite"`, 3 s auto-dismiss. VIKTIGT: triggas INTE inifrån
+  `AuthContext` (som är helt orörd) — `LoggaIn.tsx`/`Sidebar.tsx` anropar
+  `showToast(...)` EXPLICIT efter lyckad `signIn`/`signOut`, så den aldrig
+  visas vid sessionsåterställning.
+- Sidinnehållets maxbredd: `max-w-[1080px]`, `mx-auto text-left` i `Layout.tsx`
+  (blocket centreras, brödtext vänsterjusterad). Brödtextstycken har ingen egen
+  extra breddspärr (utom `LoggaIn`:s avsiktligt smala `max-w-md`-kort).
+- `/admin` flikat (`role="tablist"/"tab"/"tabpanel"`, `useState`), aktiv flik
+  = tunn guldunderkant + marinblå text.
+- Filuppladdning (`<input type="file">`): Tailwinds `file:`-variant så
+  systemknappen matchar appens knappspråk.
+- `MatchTable`: `<table>` (bredare skärmar) ligger nu i ett eget `.card`
+  (`overflow-x-auto` för säkerhets skull), mobilvyns staplade `<li className
+  ="card">`-kort är oförändrade och INTE dubbel-inramade. Zebra-randning
+  `even:bg-gray-200` (INTE `bg-background` — det är samma off-white som
+  canvasen och syns inte).
+- Nyhets-/medlemsinläggskort: bas-`.card` (`p-6`) används rakt av UTAN
+  extra padding-override (var `p-8` ett tag — kändes för buffligt/högt,
+  ströks). Rubrik `mt-1`, brödtext `mt-2` — kompakt men luftigt.
+- `Tavlingar.tsx` importerar `src/assets/affish.png` (OBS: den stavningen,
+  inte "affisch") direkt som en vanlig statisk `import` — filen finns nu på
+  disk, ingen `import.meta.glob`-fallback behövs längre.
+- `Bilder.tsx`: klick på en miniatyr öppnar `Lightbox.tsx` (modal overlay,
+  mörk halvtransparent bakgrund, stänger vid bakgrundsklick/X/Escape,
+  fokusfälla + återställer fokus vid stängning, `role="dialog"
+  aria-modal="true"`) — INTE längre `target="_blank"` till en ny flik.
+- Footer: kontakt-mailto (`kontakt@pkoldboys.se`, PLACEHOLDER — byt till
+  klubbens riktiga adress) i guld (`text-accent` — OK kontrast 5.53:1 på
+  `primary`-mörkblå, till skillnad från guld-text-på-vitt som INTE klarar
+  AA), plus en `© 2026 PK Oldboys Bowling`-rad i `text-gray-300`.
+- `@media (prefers-reduced-motion: reduce)` stänger av transitions globalt.
+
+## Kända TODO / öppna punkter
+- ⚠️ Footerns kontakt-e-post (`kontakt@pkoldboys.se`) är en PLACEHOLDER —
+  byt till klubbens riktiga e-postadress i `src/components/layout/Footer.tsx`
+  när den finns.
+- ⚠️ Tabellen `matches` (i `supabase/schema.sql`) är INTE körd i databasen än
+  (`PGRST205: Could not find table 'public.matches'`). Kör "Added in Step 4"-
+  sektionen i SQL Editor, annars visar "Våra aktiviteter" felmeddelande i
+  stället för tomt tillstånd. `news`-tabellen finns och funkar.
+- Storage-buckets `gallery` och `documents` (båda publika) — skapa manuellt i
+  Supabase-dashboarden om ej gjort.
+- `.env` ifylld ✅, auth-användarna `admin@pkoldboys.se` /
+  `medlem@pkoldboys.se` finns ✅.
+- Inloggningsflödet ej testat i webbläsare av Claude (endast `tsc -b`).
+  Testa: medlem → `/medlem`, admin → `/admin` (+ kan öppna `/medlem`),
+  "Logga ut" → utloggat läge.
+- Klubbloggan `src/assets/logo.jpg` visas som bred banner (ingen cirkel-
+  beskärning — skulle klippa texten "PK Old Boys").
