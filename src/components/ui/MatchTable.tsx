@@ -17,17 +17,17 @@ export default function MatchTable({ matches }: MatchTableProps) {
         <table className="w-full border-collapse text-lg">
           <thead>
             <tr className="border-b-2 border-primary text-left">
-              <th className="py-3 pr-4">Datum</th>
-              <th className="py-3 pr-4">Tid</th>
-              <th className="py-3 pr-4">Hemma</th>
-              <th className="py-3 pr-4">Borta</th>
-              <th className="py-3 pr-4">Plats</th>
-              <th className="py-3 pr-4">Resultat</th>
+              <th className="py-3 pr-4 font-semibold">Datum</th>
+              <th className="py-3 pr-4 font-semibold">Tid</th>
+              <th className="py-3 pr-4 font-semibold">Hemma</th>
+              <th className="py-3 pr-4 font-semibold">Borta</th>
+              <th className="py-3 pr-4 font-semibold">Plats</th>
+              <th className="py-3 pr-4 font-semibold">Resultat</th>
             </tr>
           </thead>
           <tbody>
             {matches.map((match) => (
-              <tr key={match.id} className="border-b border-gray-200 even:bg-gray-200">
+              <tr key={match.id} className="border-b border-gray-200">
                 <td className="py-3 pr-4">{match.date}</td>
                 <td className="py-3 pr-4">{match.time}</td>
                 <td className="py-3 pr-4">{match.home}</td>

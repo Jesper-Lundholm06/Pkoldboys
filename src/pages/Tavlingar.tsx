@@ -1,4 +1,5 @@
 import { buttonClass } from '../components/ui/buttonStyles'
+import ExternalLink from '../components/ui/ExternalLink'
 import affisch from '../assets/affish.png'
 
 export default function Tavlingar() {
@@ -17,15 +18,10 @@ export default function Tavlingar() {
         Anmälningslista
       </a>
 
-      <p className="mt-8">
-        <a
-          href="https://bowlit.nu/league.asp?groupi=4"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-lg font-medium"
-        >
+      <p className="mt-8 text-lg">
+        <ExternalLink href="https://bowlit.nu/league.asp?groupi=4">
           Resultat
-        </a>
+        </ExternalLink>
       </p>
     </div>
   )

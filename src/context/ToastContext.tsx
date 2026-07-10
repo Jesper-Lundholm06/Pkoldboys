@@ -24,13 +24,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div
-        aria-live="polite"
-        role="status"
-        className="fixed left-1/2 top-20 z-50 -translate-x-1/2"
-      >
+      <div aria-live="polite" role="status" className="fixed inset-x-0 top-0 z-50">
         {message && (
-          <div className="rounded-lg border-b-2 border-accent bg-primary px-8 py-4 text-xl font-semibold text-white shadow-lg">
+          <div className="animate-[toast-slide-down_0.4s_ease-out] border-b-2 border-[#d4af37] bg-[#eef5fb] px-6 py-3 text-center text-2xl font-bold text-[#1d3557] shadow-lg sm:px-10">
             {message}
           </div>
         )}

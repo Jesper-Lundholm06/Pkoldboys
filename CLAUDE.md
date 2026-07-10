@@ -34,7 +34,9 @@ src/
                 auth-nav), Footer.tsx (kontakt-mailto + copyright)
     ui/          MatchTable.tsx (utbytesmatcher, tabellen i ett `.card`),
                 Lightbox.tsx (modal för bildvisning, fokusfälla + Escape),
-                buttonStyles.ts, StateMessage.tsx
+                ExternalLink.tsx (delad av Riksserien-länkarna och
+                Tävlingars "Resultat"-länk — navy understruken text + pil-
+                ut-ikon, `target="_blank"`), buttonStyles.ts, StateMessage.tsx
     auth/        ProtectedRoute.tsx (loading/redirect/requireAdmin)
     admin/       NewsAdmin, MatchesAdmin, MemberPostsAdmin, DocumentsAdmin,
                  GalleryAdmin — samma CRUD-mönster (delat create+edit-formulär,
@@ -68,10 +70,13 @@ Palett: navy + white + gray, med guld enbart som tunn accent.
   footer, toast-bakgrund, länkar och rubriker på vita sidor, sekundärknappars
   kant/text. Ingen egen mörkare header-nyans — en tunn `border-white/15`-linje
   avdelar logga-headern från nav-listan.
-- `accent` guld `#d9ac4e` (+ `accent-dark` `#b3872f`) — ENDAST tunn accent:
-  aktiv-nav-vänsterkant (`border-l-2`), `h2`-understrykning (`border-b-2`),
-  knappars nedre kant, fokusring. ALDRIG som fylld knappbakgrund. ALDRIG som
-  ren textfärg (klarar inte WCAG AA på vitt) — bara kant/linje/accent.
+- `accent` guld `#d9ac4e` (+ `accent-dark` `#b3872f`) — huvudsakligen tunn
+  accent: aktiv-nav-vänsterkant (`border-l-2`), `h2`-understrykning
+  (`border-b-2`), knappars nedre kant, fokusring. ALDRIG som fylld
+  knappbakgrund. ALDRIG som textfärg på VIT botten (klarar inte WCAG AA,
+  bara 2–3:1) — men FUNGERAR som textfärg på den mörka `primary`-bakgrunden
+  (5.53:1, AA-godkänt): används så för footerns kontakt-länk och
+  "INLOGGAD SOM ADMIN"-etiketten i sidebaren.
 - `danger` `#b3261e` (+ `danger-light` `#fbeceb`) — destruktiva "Ta bort".
 - Grå: Tailwinds inbyggda `gray`-skala (`gray-50`…`gray-700`) för brödtext/
   datum/kanter/subtila hover-bakgrunder.
@@ -104,17 +109,28 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
   fokusruta (från den globala `:focus-visible`-regeln i `index.css`) ser ut
   som en permanent låst ruta runt aktiv sida efter musklick i en SPA.
   Sidebar-loggan är nu en `<Link to="/">` (klickbar hem-länk, samma mål som
-  "PK Oldboys"-länken), något större (`max-w-[190px]`, var 160px).
-- "Inloggad som …": liten dämpad text (`text-sm`, `text-gray-300`, ingen
-  box), med en guld `<hr border-accent>` ovanför som avdelare — gäller BÅDA
-  "admin" och "medlem" (samma villkorslösa `<hr>`, ingen skillnad i koden).
-- Toast (`ToastContext.tsx`): marinblå bg + vit fetstil `text-xl`, centrerad
-  horisontellt, `fixed top-20` (80px — högre värden än `top-4` för att
-  aldrig överlappa `h1`, som börjar strax under `main`s `py-8`-padding),
-  `aria-live="polite"`, 3 s auto-dismiss. VIKTIGT: triggas INTE inifrån
-  `AuthContext` (som är helt orörd) — `LoggaIn.tsx`/`Sidebar.tsx` anropar
-  `showToast(...)` EXPLICIT efter lyckad `signIn`/`signOut`, så den aldrig
-  visas vid sessionsåterställning.
+  "PK Oldboys"-länken), `max-w-[240px]` (var 160px, sedan 190px).
+- "Inloggad som …": liten text (`text-sm`), med en guld `<hr border-accent>`
+  ovanför som avdelare — gäller BÅDA "admin" och "medlem" (samma
+  villkorslösa `<hr>`). Textfärgen SKILJER dock: "admin" är `text-accent`
+  (guld — signalerar "höjd behörighet", kontrast 5.53:1 på `primary`),
+  "medlem" förblir dämpad `text-gray-300`.
+- Toast (`ToastContext.tsx`): SLIM banner, `fixed inset-x-0 top-0` (fullbredd,
+  flush mot toppkanten). EGEN, medvetet fristående palett (inte
+  design-tokens `primary`/`accent` — givna som exakta hex i uppdraget):
+  bakgrund `#eef5fb` (ljusblå), text `#1d3557` (mörk marinblå, kontrast
+  11.23:1), tunn underkant `#d4af37` (guld, 2px) — bytt FRÅN den tidigare
+  helmarinblå/vita versionen som smälte ihop med sidebaren. `py-3`
+  (tidigare `py-6`) + `text-2xl` (tidigare `text-3xl`) för en slimmad,
+  mindre klumpig bar. Glider ned med en `@keyframes toast-slide-down` (i
+  `index.css`, refereras via Tailwinds `animate-[toast-slide-down_0.4s_
+  ease-out]`) — den globala `prefers-reduced-motion`-regeln nollar
+  animationstiden automatiskt så den bara dyker upp direkt utan glidning
+  för de som begärt det. `aria-live="polite"`, 3 s auto-dismiss, ingen
+  layoutförskjutning (`fixed`, overlay). VIKTIGT: triggas INTE inifrån `AuthContext`
+  (som är helt orörd) — `LoggaIn.tsx`/`Sidebar.tsx` anropar `showToast(...)`
+  EXPLICIT efter lyckad `signIn`/`signOut`, så den aldrig visas vid
+  sessionsåterställning/sidladdning.
 - Sidinnehållets maxbredd: `max-w-[1080px]`, `mx-auto text-left` i `Layout.tsx`
   (blocket centreras, brödtext vänsterjusterad). Brödtextstycken har ingen egen
   extra breddspärr (utom `LoggaIn`:s avsiktligt smala `max-w-md`-kort).
@@ -124,19 +140,32 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
   systemknappen matchar appens knappspråk.
 - `MatchTable`: `<table>` (bredare skärmar) ligger nu i ett eget `.card`
   (`overflow-x-auto` för säkerhets skull), mobilvyns staplade `<li className
-  ="card">`-kort är oförändrade och INTE dubbel-inramade. Zebra-randning
-  `even:bg-gray-200` (INTE `bg-background` — det är samma off-white som
-  canvasen och syns inte).
+  ="card">`-kort är oförändrade och INTE dubbel-inramade. Radavgränsning är
+  tunna horisontella `border-b border-gray-200`-linjer (INTE grå
+  zebra-randning längre — `even:bg-gray-200` togs bort, kändes för
+  "kalkylark-randigt"; en ren linjeindelad tabell upplevdes tydligare).
 - Nyhets-/medlemsinläggskort: bas-`.card` (`p-6`) används rakt av UTAN
   extra padding-override (var `p-8` ett tag — kändes för buffligt/högt,
   ströks). Rubrik `mt-1`, brödtext `mt-2` — kompakt men luftigt.
 - `Tavlingar.tsx` importerar `src/assets/affish.png` (OBS: den stavningen,
   inte "affisch") direkt som en vanlig statisk `import` — filen finns nu på
-  disk, ingen `import.meta.glob`-fallback behövs längre.
+  disk, ingen `import.meta.glob`-fallback behövs längre. Affisch (`max-w-sm`)
+  + "Anmälningslista"-knappen + "Resultat"-länken ligger i vanligt vänster-
+  justerat blockflöde, SAMMA mönster som `<h1>` och alla andra sidor —
+  en tidigare variant centrerade dem (`flex flex-col items-center`) men det
+  gjorde att innehållet hamnade förskjutet ÅT HÖGER relativt övriga sidors
+  vänsterkant, vilket uppfattades som fel; ströks igen.
 - `Bilder.tsx`: klick på en miniatyr öppnar `Lightbox.tsx` (modal overlay,
   mörk halvtransparent bakgrund, stänger vid bakgrundsklick/X/Escape,
   fokusfälla + återställer fokus vid stängning, `role="dialog"
   aria-modal="true"`) — INTE längre `target="_blank"` till en ny flik.
+- Externa länkar (Riksserien Division 3/6 på `VaraAktiviteter.tsx`, samt
+  "Resultat" på `Tavlingar.tsx`) använder alla samma delade
+  `ExternalLink.tsx`: marinblå (`text-primary`) understruken text + en
+  liten inline SVG pil-ut-ikon (`aria-hidden`) efter texten,
+  `hover:opacity-75`, en `sr-only`-text "(öppnas i ny flik)" för
+  skärmläsare, `target="_blank"` + `rel="noopener noreferrer"` inbyggt i
+  komponenten.
 - Footer: kontakt-mailto (`kontakt@pkoldboys.se`, PLACEHOLDER — byt till
   klubbens riktiga adress) i guld (`text-accent` — OK kontrast 5.53:1 på
   `primary`-mörkblå, till skillnad från guld-text-på-vitt som INTE klarar

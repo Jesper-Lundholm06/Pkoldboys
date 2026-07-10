@@ -3,6 +3,7 @@ import MatchTable from '../components/ui/MatchTable'
 import type { Match } from '../data/matches'
 import { fetchTable } from '../lib/fetchTable'
 import StateMessage from '../components/ui/StateMessage'
+import ExternalLink from '../components/ui/ExternalLink'
 
 export default function VaraAktiviteter() {
   const [matches, setMatches] = useState<Match[] | null>(null)
@@ -26,24 +27,14 @@ export default function VaraAktiviteter() {
         <div className="card">
           <ul className="flex flex-col gap-2 text-lg">
             <li>
-              <a
-                href="https://www.sbhf.se/ligaservice/index.php/serie/index?parentId=8614"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium"
-              >
+              <ExternalLink href="https://www.sbhf.se/ligaservice/index.php/serie/index?parentId=8614">
                 Riksserien Division 3
-              </a>
+              </ExternalLink>
             </li>
             <li>
-              <a
-                href="https://www.sbhf.se/ligaservice/index.php/serie/index?parentId=8617"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium"
-              >
+              <ExternalLink href="https://www.sbhf.se/ligaservice/index.php/serie/index?parentId=8617">
                 Riksserien Division 6
-              </a>
+              </ExternalLink>
             </li>
           </ul>
         </div>

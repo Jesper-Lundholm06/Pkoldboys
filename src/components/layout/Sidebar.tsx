@@ -49,7 +49,7 @@ export default function Sidebar({ isOpen, onNavigate }: SidebarProps) {
         onClick={onNavigate}
         className={`block px-4 py-6 text-center ${focusRing}`}
       >
-        <img src={logo} alt="" className="mx-auto w-full max-w-[190px] rounded" />
+        <img src={logo} alt="" className="mx-auto w-full max-w-[240px] rounded" />
         <span className="mt-3 block text-lg font-bold leading-tight text-white">
           PK Oldboys Bowling
         </span>
@@ -107,7 +107,11 @@ export default function Sidebar({ isOpen, onNavigate }: SidebarProps) {
         {user ? (
           <div className="mt-8">
             <hr className="border-t border-accent" />
-            <p className="mb-3 mt-4 px-3 text-sm font-semibold uppercase tracking-wide text-gray-300">
+            <p
+              className={`mb-3 mt-4 px-3 text-sm font-semibold uppercase tracking-wide ${
+                isAdmin ? 'text-accent' : 'text-gray-300'
+              }`}
+            >
               Inloggad som {isAdmin ? 'admin' : 'medlem'}
             </p>
             <ul className="flex flex-col">
