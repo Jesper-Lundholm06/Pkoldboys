@@ -5,10 +5,10 @@
 -- (uses "if not exists" / "or replace" where possible), but it will error
 -- on the CREATE TABLE / CREATE POLICY statements if they already exist.
 --
--- If you already ran this file in Step 2 (news/documents/member_posts exist),
--- you only need to run the NEW "matches" table + its policies added in
--- Step 4 (search for "Added in Step 4" below) — running the whole file again
--- will error on the already-existing policies.
+-- If you already ran earlier versions of this file, you only need to run the
+-- NEWEST "Added in Step N" table + its policies (search for "Added in Step"
+-- below) — running the whole file again will error on already-existing
+-- tables/policies. Added in Step 4: "matches". Added in Step 12: "events".
 --
 -- Auth model assumed by the policies below:
 --   - One ADMIN account: admin@pkoldboys.se (full write access everywhere)
@@ -52,6 +52,17 @@ create table if not exists matches (
   result text not null default ''
 );
 
+-- Added in Step 12: upcoming events shown on Home (public read)
+create table if not exists events (
+  id bigint generated always as identity primary key,
+  title text not null,
+  event_date date not null,
+  event_time text,
+  location text,
+  description text,
+  created_at timestamptz not null default now()
+);
+
 -- ---------------------------------------------------------------------
 -- Row Level Security
 -- ---------------------------------------------------------------------
@@ -60,6 +71,7 @@ alter table news enable row level security;
 alter table documents enable row level security;
 alter table member_posts enable row level security;
 alter table matches enable row level security;
+alter table events enable row level security;
 
 -- news: public read, admin-only write
 create policy "news_select_public"
@@ -131,4 +143,22 @@ create policy "matches_update_admin"
 
 create policy "matches_delete_admin"
   on matches for delete
+  using ((auth.jwt() ->> 'email') = 'admin@pkoldboys.se');
+
+-- events: public read, admin-only write
+create policy "events_select_public"
+  on events for select
+  using (true);
+
+create policy "events_insert_admin"
+  on events for insert
+  with check ((auth.jwt() ->> 'email') = 'admin@pkoldboys.se');
+
+create policy "events_update_admin"
+  on events for update
+  using ((auth.jwt() ->> 'email') = 'admin@pkoldboys.se')
+  with check ((auth.jwt() ->> 'email') = 'admin@pkoldboys.se');
+
+create policy "events_delete_admin"
+  on events for delete
   using ((auth.jwt() ->> 'email') = 'admin@pkoldboys.se');

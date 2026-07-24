@@ -19,12 +19,15 @@ på svenska. Medvetet enkel design — inget flashigt.
 - React Router v6+ (react-router-dom)
 - Supabase (auth, DB, storage). SENARE: Netlify-hosting, domän pkoldboys.se
 
-## Färdplan (11 steg)
+## Färdplan (11 steg + tillägg)
 Steg 1–9 klara (skelett, Supabase, publika sidor, nyheter, login/skyddade
 routes, admin-dashboard, medlemssida, bilder+dokument, tillgänglighetspolish).
 Steg 11 påbörjat: Netlify SPA-routing (`_redirects` + `netlify.toml`) klar,
 se Mappstruktur + Kända TODO. Kvar: 10) keep-alive mot Supabase 7-dagars
 paus, resten av 11) faktisk Netlify-deploy + domän pkoldboys.se.
+Steg 12 (tillägg utöver ursprungsplanen): "Kommande händelser" — enkel
+kalender/händelselista på Home + admin-hantering. Klart, se Mappstruktur +
+Kända TODO (SQL-tabellen är inte körd i databasen än).
 
 ## Mappstruktur
 ```
@@ -40,24 +43,35 @@ src/
                 Tävlingars "Resultat"-länk — navy understruken text + pil-
                 ut-ikon, `target="_blank"`), buttonStyles.ts, StateMessage.tsx
     auth/        ProtectedRoute.tsx (loading/redirect/requireAdmin)
-    admin/       NewsAdmin, MatchesAdmin, MemberPostsAdmin, DocumentsAdmin,
-                 GalleryAdmin — samma CRUD-mönster (delat create+edit-formulär,
-                 lista med Ändra/Ta bort). Gallery/Documents laddar upp till
-                 Storage + insert/delete rad (tar bort både objekt och DB-rad)
+    admin/       NewsAdmin, EventsAdmin, MatchesAdmin, MemberPostsAdmin,
+                 DocumentsAdmin, GalleryAdmin — samma CRUD-mönster (delat
+                 create+edit-formulär, lista med Ändra/Ta bort). Gallery/
+                 Documents laddar upp till Storage + insert/delete rad (tar
+                 bort både objekt och DB-rad). EventsAdmin visar ALLA
+                 händelser (även passerade, dämpade med `opacity-60` +
+                 "(passerad)"-text) sorterat stigande på `event_date`, så
+                 admin kan redigera/ta bort gamla poster.
   context/      AuthContext.tsx (useAuth: session/user/loading/isAdmin/signIn/
                 signOut — rörs ALDRIG i designsteg),
                 ToastContext.tsx (useToast — se Designtokens)
-  pages/        Home (nyheter), Tavlingar (affisch + Anmälningslista/
-                Resultat), VaraAktiviteter (Riksserien + matcher, båda i
-                `.card`), Bilder (bucket "gallery", per album, klick öppnar
-                Lightbox — INGEN separat route/ny flik längre), Dokument
-                (bucket "documents", per kategori), Ovrigt (platshållare),
-                LoggaIn (/logga-in), Medlem (/medlem, skyddad, read-only),
+  pages/        Home (Kommande händelser + nyheter, båda från DB), Tavlingar
+                (affisch + Anmälningslista/Resultat), VaraAktiviteter
+                (Riksserien + matcher, båda i `.card`), Bilder (bucket
+                "gallery", per album, klick öppnar Lightbox — INGEN separat
+                route/ny flik längre), Dokument (bucket "documents", per
+                kategori), Ovrigt (platshållare), LoggaIn (/logga-in),
+                Medlem (/medlem, skyddad, read-only),
                 Admin (/admin, requireAdmin, flikat dashboard)
-  data/         news/matches/memberPosts/documents/galleryImages.ts — ENDAST
-                typer (ingen hårdkodad data, allt mot DB + Storage)
-  lib/          supabase.ts (klient), fetchTable.ts (typad select-helper),
-                formatDateTime.ts (sv-SE datum+tid, delad av nyheter/medlemsinlägg)
+  data/         news/events/matches/memberPosts/documents/galleryImages.ts —
+                ENDAST typer (ingen hårdkodad data, allt mot DB + Storage)
+  lib/          supabase.ts (klient), fetchTable.ts (typad select-helper,
+                stödjer BARA enkel select+order — `events`-sidan på Home
+                anropar `supabase` direkt för `.gte('event_date', idag)`),
+                formatDateTime.ts (`formatDateTime` = sv-SE datum+tid för
+                nyheter/medlemsinlägg, `formatEventDate` = sv-SE "15
+                augusti"-format — används av EventsAdmin.tsx, RÖR EJ,
+                `getEventDayMonth` = separat {day, month}-par för Homes
+                datumblock, se Designtokens)
   router/       AppRouter.tsx
   App.tsx, main.tsx (<App/> i <AuthProvider>), index.css
 public/         _redirects (Netlify SPA-fallback: "/* /index.html 200",
@@ -137,6 +151,38 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
   (som är helt orörd) — `LoggaIn.tsx`/`Sidebar.tsx` anropar `showToast(...)`
   EXPLICIT efter lyckad `signIn`/`signOut`, så den aldrig visas vid
   sessionsåterställning/sidladdning.
+- "Kommande händelser" på Home återanvänder AVSIKTLIGT samma fristående
+  ljusblå/guld/marinblå-palett som toasten ovan (`#eef5fb`/`#d4af37`/
+  `#1d3557`) men som ett kompakt "anslagstavle"-kort: `border-l-4
+  border-[#d4af37]`, `bg-[#eef5fb]`, tät padding (`px-4 py-3`, `gap-2`
+  mellan kort) — medvetet mycket plattare/tätare än de vita `.card`-baserade
+  nyhetskorten direkt under, så sektionerna inte flyter ihop visuellt.
+  Kortlayout (Steg 12c, uppdaterad 12d/12e): tvådelad rad, `flex
+  items-start gap-4`. VÄNSTER = fast `w-20`-datumblock (Steg 12e: breddad
+  från `w-16` för att bekvämt rymma "17:00" + 3-bokstavsmånad), separerat
+  med en tunn `border-r border-[#1d3557]/20`: stor fetstil dagssiffra
+  (`text-2xl`), liten versal 3-BOKSTAVS månad (`text-xs` — Steg 12e-bugg:
+  fulla månadsnamn som "SEPTEMBER" bröt ramjustering/divider-positionen
+  mellan kort; `getEventDayMonth()` hämtar nu `{month:'short'}`, strippar
+  eventuell avslutande punkt, versaliserar och `.slice(0,3)` → garanterat
+  JAN/FEB/MAR/APR/MAJ/JUN/JUL/AUG/SEP/OKT/NOV/DEC oavsett locale-variant),
+  och (Steg 12d) TIDEN direkt under månaden (`text-base font-bold`, helt
+  opak — mörkare/större än den gamla dämpade metaraden, men mindre än
+  dagssiffran) — bara när `event_time` finns, annars ingen platshållarrad
+  (håller blocken lika höga i alla fall). HÖGER = rubrik (`text-base
+  font-bold`), plats på en egen rad utan "·"-separator (behövs inte längre
+  när tiden flyttat ut), och valfri beskrivning i `text-sm`. Den äldre
+  `formatEventDate()` (kombinerat "25 juli"-format) RÖRDES INTE eftersom
+  `EventsAdmin.tsx` fortfarande använder den och admin-komponenter är
+  explicit utanför scope för Home-designändringar.
+  Datum/plats/beskrivning använder `text-[#1d3557]/80` eller `/70` (opacitet,
+  kontrast 6.29:1 vid 80% — beräknat, inte bara `text-gray-500` eftersom
+  uppdraget ville ha en "dämpad grå-MARINBLÅ" i samma familj som
+  rubriktexten). Sortering: DB-frågan ordnar bara på `event_date`; eftersom
+  `event_time` är fritext ("16:00"/"16.00"/"9.00") sorteras händelser inom samma dag
+  EFTERÅT i JS via en liten normaliserare (`parseTimeToMinutes` i
+  `Home.tsx`) som konverterar till minuter-sedan-midnatt och sätter
+  saknad/oparsbar tid till `Infinity` (sorteras sist den dagen).
 - Sidinnehållets maxbredd: `max-w-[1080px]`, `mx-auto text-left` i `Layout.tsx`
   (blocket centreras, brödtext vänsterjusterad). Brödtextstycken har ingen egen
   extra breddspärr (utom `LoggaIn`:s avsiktligt smala `max-w-md`-kort).
@@ -199,6 +245,12 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
   (`PGRST205: Could not find table 'public.matches'`). Kör "Added in Step 4"-
   sektionen i SQL Editor, annars visar "Våra aktiviteter" felmeddelande i
   stället för tomt tillstånd. `news`-tabellen finns och funkar.
+- ⚠️ Samma sak med tabellen `events` (Steg 12) — verifierat direkt mot
+  REST-API:t att den ÄNNU INTE finns (`PGRST205`), trots att uppdraget sa
+  att den redan fanns. Kör "Added in Step 12"-sektionen i `schema.sql` i
+  SQL Editor, annars visar "Kommande händelser" på Home och Händelser-fliken
+  i admin felmeddelandet "Kunde inte hämta händelser just nu." istället för
+  tomt/riktigt innehåll.
 - Storage-buckets `gallery` och `documents` (båda publika) — skapa manuellt i
   Supabase-dashboarden om ej gjort.
 - `.env` ifylld ✅, auth-användarna `admin@pkoldboys.se` /

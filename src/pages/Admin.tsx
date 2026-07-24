@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import NewsAdmin from '../components/admin/NewsAdmin'
+import EventsAdmin from '../components/admin/EventsAdmin'
 import MatchesAdmin from '../components/admin/MatchesAdmin'
 import MemberPostsAdmin from '../components/admin/MemberPostsAdmin'
 import DocumentsAdmin from '../components/admin/DocumentsAdmin'
@@ -7,6 +8,7 @@ import GalleryAdmin from '../components/admin/GalleryAdmin'
 
 const TABS = [
   { key: 'news', label: 'Nyheter', Component: NewsAdmin },
+  { key: 'events', label: 'Händelser', Component: EventsAdmin },
   { key: 'matches', label: 'Matcher', Component: MatchesAdmin },
   { key: 'member-posts', label: 'Medlemsinlägg', Component: MemberPostsAdmin },
   { key: 'documents', label: 'Dokument', Component: DocumentsAdmin },
