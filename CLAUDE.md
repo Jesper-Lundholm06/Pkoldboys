@@ -22,9 +22,11 @@ på svenska. Medvetet enkel design — inget flashigt.
 ## Färdplan (11 steg + tillägg)
 Steg 1–9 klara (skelett, Supabase, publika sidor, nyheter, login/skyddade
 routes, admin-dashboard, medlemssida, bilder+dokument, tillgänglighetspolish).
+Steg 10 klart: GitHub Actions keep-alive mot Supabase, se Mappstruktur +
+Kända TODO (GitHub-secrets måste konfigureras manuellt).
 Steg 11 påbörjat: Netlify SPA-routing (`_redirects` + `netlify.toml`) klar,
-se Mappstruktur + Kända TODO. Kvar: 10) keep-alive mot Supabase 7-dagars
-paus, resten av 11) faktisk Netlify-deploy + domän pkoldboys.se.
+se Mappstruktur + Kända TODO. Kvar: resten av 11) faktisk Netlify-deploy +
+domän pkoldboys.se.
 Steg 12 (tillägg utöver ursprungsplanen): "Kommande händelser" — enkel
 kalender/händelselista på Home + admin-hantering. Klart, se Mappstruktur +
 Kända TODO (SQL-tabellen är inte körd i databasen än).
@@ -80,6 +82,14 @@ supabase/       schema.sql — DB-schema + RLS, körs manuellt i SQL Editor
 .env / .env.example   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 netlify.toml    build-kommando "npm run build", publish "dist", samma
                 SPA-redirect som public/_redirects (bälte+hängslen)
+.github/
+  workflows/    keep-alive.yml — GitHub Action, pingar Supabase REST API
+                var 3:e dag (cron "0 6 */3 * *") + manuellt via
+                workflow_dispatch, så det pausar inte projektet efter
+                ~7 dagars inaktivitet på gratisnivån. Läser
+                secrets.SUPABASE_URL/SUPABASE_ANON_KEY (INTE VITE_-
+                prefixade — separata repo-secrets, ej från .env). Se
+                Kända TODO för vad som måste konfigureras manuellt.
 ```
 
 ## Designtokens (tailwind.config.js + index.css)
@@ -231,6 +241,15 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
 - `@media (prefers-reduced-motion: reduce)` stänger av transitions globalt.
 
 ## Kända TODO / öppna punkter
+- ⚠️ `.github/workflows/keep-alive.yml` (Steg 10) KRÄVER manuell setup
+  innan den fungerar: lägg till repo-secrets `SUPABASE_URL` och
+  `SUPABASE_ANON_KEY` under GitHub → Settings → Secrets and variables →
+  Actions (OBS: utan `VITE_`-prefix, skilda från `.env`-namnen även om
+  värdena är desamma). Kan köras manuellt från Actions-fliken
+  ("Run workflow") för att testa innan man väntar på schemat. GitHub
+  stänger AV schemalagda workflows efter 60 dagars inaktivitet i repot
+  (inga pushar/commits) — går att slå på igen från Actions-fliken om det
+  händer.
 - Netlify SPA-routing (`public/_redirects` + `netlify.toml`) är på plats så
   direktbesök/refresh på undersidor (t.ex. `/logga-in`, `/admin`) inte ger
   404 i produktion. Verifierat: `npm run build` → `dist/_redirects`

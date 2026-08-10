@@ -27,7 +27,13 @@
       "Read(//tmp/**)",
       "Bash(grep -o \"\\\\.card{[^}]*}\" /tmp/style.css | head -3 *)",
       "Bash(grep -o \"card\" /tmp/style.css | wc -l *)",
-      "Bash(grep -o \"brightness[^;]*\" /tmp/style9c.css | head -5 *)"
+      "Bash(grep -o \"brightness[^;]*\" /tmp/style9c.css | head -5 *)",
+      "Bash(mkdir -p \"C:/Users/u8531/kod/Oldboysbowling/.github/workflows\")",
+      "Bash(python3 -c \"import yaml,sys; yaml.safe_load\\(open\\('C:/Users/u8531/kod/Oldboysbowling/.github/workflows/keep-alive.yml'\\)\\); print\\('valid yaml'\\)\")",
+      "Bash(python -c \"import yaml,sys; yaml.safe_load\\(open\\('C:/Users/u8531/kod/Oldboysbowling/.github/workflows/keep-alive.yml'\\)\\); print\\('valid yaml'\\)\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\u8531\\kod\\Oldboysbowling\\.github"
     ]
   }
 }
