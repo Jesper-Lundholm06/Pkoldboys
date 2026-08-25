@@ -12,6 +12,10 @@ export type CalendarEvent = {
   tag: string | null
 }
 
+type AgendaRow =
+  | { kind: 'week'; weekNumber: number }
+  | { kind: 'day'; day: number; weekday: number }
+
 const TAG_COLORS: Record<string, string> = {
   riksserien: 'bg-blue-100 text-blue-800',
   klubbmatcher: 'bg-green-100 text-green-800',
@@ -54,6 +58,27 @@ function weekdayAbbr(year: number, month: number, day: number) {
     weekday: 'short',
   })
   return capitalize(raw.replace(/\.$/, ''))
+}
+
+// Standard ISO-8601 week number (Monday-start weeks, week 1 contains the
+// year's first Thursday).
+function getISOWeek(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  const dayNum = d.getUTCDay() || 7
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum)
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
+}
+
+function dayRowClasses(isToday: boolean, weekday: number) {
+  if (isToday) return 'border-l-4 border-accent bg-accent/15'
+  if (weekday === 0) return 'bg-red-50'
+  if (weekday === 6) return 'bg-gray-50'
+  return ''
+}
+
+function dayNumberClass(weekday: number) {
+  return weekday === 0 ? 'text-red-600' : 'text-primary'
 }
 
 export default function Calendar() {
@@ -106,6 +131,11 @@ export default function Calendar() {
     )
   }
 
+  function goToToday() {
+    const now = new Date()
+    setCursor({ year: now.getFullYear(), month: now.getMonth() })
+  }
+
   const monthLabel = capitalize(
     new Date(cursor.year, cursor.month, 1).toLocaleDateString('sv-SE', {
       month: 'long',
@@ -128,13 +158,35 @@ export default function Calendar() {
     }
   }
 
-  const daysWithEvents = [...eventsByDay.keys()].sort((a, b) => a - b)
+  const daysInMonth = new Date(cursor.year, cursor.month + 1, 0).getDate()
+
+  const rows: AgendaRow[] = []
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(cursor.year, cursor.month, day)
+    const weekday = date.getDay()
+    if (weekday === 1 && day !== 1) {
+      rows.push({ kind: 'week', weekNumber: getISOWeek(date) })
+    }
+    rows.push({ kind: 'day', day, weekday })
+  }
+
+  const today = new Date()
+  const isCurrentMonth =
+    cursor.year === today.getFullYear() && cursor.month === today.getMonth()
 
   const navButtonClass =
     'flex min-h-11 min-w-11 items-center justify-center rounded-md border-2 border-primary bg-white text-2xl font-bold text-primary shadow-sm hover:bg-gray-50 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent'
 
   return (
     <div className="card">
+      <button
+        type="button"
+        onClick={goToToday}
+        className="mb-3 text-base font-semibold text-primary hover:underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+      >
+        Gå till idag
+      </button>
+
       <div className="flex items-center justify-between gap-4">
         <button
           type="button"
@@ -166,61 +218,78 @@ export default function Calendar() {
           </StateMessage>
         )}
 
-        {events !== null && error === null && daysWithEvents.length === 0 && (
-          <StateMessage>Inga händelser den här månaden.</StateMessage>
-        )}
+        {events !== null && error === null && (
+          <ul className="flex flex-col overflow-hidden rounded-md">
+            {rows.map((row, index) => {
+              if (row.kind === 'week') {
+                return (
+                  <li
+                    key={`week-${index}`}
+                    className="bg-gray-100 px-3 py-1 text-center text-xs font-semibold uppercase tracking-wide text-gray-500"
+                  >
+                    v.{row.weekNumber}
+                  </li>
+                )
+              }
 
-        {events !== null && error === null && daysWithEvents.length > 0 && (
-          <ul className="flex flex-col divide-y divide-gray-200">
-            {daysWithEvents.map((day) => (
-              <li
-                key={day}
-                className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:gap-4"
-              >
-                <div className="shrink-0 sm:w-20 sm:text-center">
-                  <p className="text-2xl font-bold leading-none text-primary">
-                    {day}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-gray-500">
-                    {weekdayAbbr(cursor.year, cursor.month, day)}
-                  </p>
-                </div>
+              const { day, weekday } = row
+              const dayEvents = eventsByDay.get(day) ?? []
+              const isToday = isCurrentMonth && day === today.getDate()
 
-                <ul className="flex flex-1 flex-col gap-4 sm:border-l sm:border-gray-200 sm:pl-4">
-                  {(eventsByDay.get(day) ?? []).map((event) => (
-                    <li key={event.id} className="flex flex-wrap items-start gap-3">
-                      {(event.start_time || event.end_time) && (
-                        <div className="w-16 shrink-0 text-base font-semibold text-gray-700">
-                          {event.start_time && <p>{event.start_time}</p>}
-                          {event.end_time && (
-                            <p className="text-gray-400">{event.end_time}</p>
+              return (
+                <li
+                  key={`day-${day}`}
+                  className={`flex items-start gap-4 px-3 py-2 ${dayRowClasses(isToday, weekday)}`}
+                >
+                  <div className="w-14 shrink-0 text-center">
+                    <p
+                      className={`text-lg font-bold leading-none ${dayNumberClass(weekday)}`}
+                    >
+                      {day}
+                    </p>
+                    <p className="mt-0.5 text-xs font-semibold uppercase text-gray-500">
+                      {weekdayAbbr(cursor.year, cursor.month, day)}
+                    </p>
+                  </div>
+
+                  {dayEvents.length > 0 && (
+                    <ul className="flex min-w-0 flex-1 flex-col gap-3 py-0.5">
+                      {dayEvents.map((event) => (
+                        <li key={event.id} className="flex flex-wrap items-start gap-3">
+                          {(event.start_time || event.end_time) && (
+                            <div className="w-16 shrink-0 text-base font-semibold text-gray-700">
+                              {event.start_time && <p>{event.start_time}</p>}
+                              {event.end_time && (
+                                <p className="text-gray-400">{event.end_time}</p>
+                              )}
+                            </div>
                           )}
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-lg font-bold text-text">
-                            {event.title}
-                          </p>
-                          {event.tag && (
-                            <span
-                              className={`rounded-full px-3 py-0.5 text-sm font-semibold ${tagColorClass(event.tag)}`}
-                            >
-                              {event.tag}
-                            </span>
-                          )}
-                        </div>
-                        {event.location && (
-                          <p className="mt-1 text-base text-gray-500">
-                            {event.location}
-                          </p>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-lg font-bold text-text">
+                                {event.title}
+                              </p>
+                              {event.tag && (
+                                <span
+                                  className={`rounded-full px-3 py-0.5 text-sm font-semibold ${tagColorClass(event.tag)}`}
+                                >
+                                  {event.tag}
+                                </span>
+                              )}
+                            </div>
+                            {event.location && (
+                              <p className="mt-1 text-base text-gray-500">
+                                {event.location}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         )}
       </div>
