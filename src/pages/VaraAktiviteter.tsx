@@ -1,23 +1,7 @@
-import { useEffect, useState } from 'react'
-import MatchTable from '../components/ui/MatchTable'
-import type { Match } from '../data/matches'
-import { fetchTable } from '../lib/fetchTable'
-import StateMessage from '../components/ui/StateMessage'
+import Calendar from '../components/calendar/Calendar'
 import ExternalLink from '../components/ui/ExternalLink'
 
 export default function VaraAktiviteter() {
-  const [matches, setMatches] = useState<Match[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchTable<Match>('matches', { column: 'id', ascending: true }).then(
-      ({ data, error }) => {
-        setMatches(data)
-        setError(error)
-      },
-    )
-  }, [])
-
   return (
     <div>
       <h1>Våra aktiviteter</h1>
@@ -41,21 +25,8 @@ export default function VaraAktiviteter() {
       </section>
 
       <section className="mt-10">
-        <h2>Utbytesmatcher</h2>
-
-        {matches === null && error === null && (
-          <StateMessage>Laddar matcher…</StateMessage>
-        )}
-
-        {error !== null && (
-          <StateMessage variant="error">
-            Kunde inte hämta matcher just nu.
-          </StateMessage>
-        )}
-
-        {matches !== null && error === null && (
-          <MatchTable matches={matches} />
-        )}
+        <h2>Kalender</h2>
+        <Calendar />
       </section>
     </div>
   )
