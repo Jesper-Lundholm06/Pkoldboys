@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import StateMessage from '../ui/StateMessage'
+import { normalizeTime } from '../../lib/formatTime'
 
 export type CalendarEvent = {
   id: number
@@ -263,43 +264,55 @@ export default function Calendar() {
 
                   {dayEvents.length > 0 && (
                     <ul className="flex min-w-0 flex-1 flex-col gap-3 py-0.5">
-                      {dayEvents.map((event) => (
-                        <li key={event.id} className="flex flex-wrap items-start gap-3">
-                          {(event.start_time || event.end_time) && (
-                            <div className="w-16 shrink-0">
-                              {event.start_time && (
-                                <p className="text-base font-semibold text-text">
-                                  {event.start_time}
-                                </p>
-                              )}
-                              {event.end_time && (
-                                <p className="text-sm text-gray-400">
-                                  {event.end_time}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="text-lg font-bold text-text">
-                                {event.title}
-                              </p>
-                              {event.tag && (
-                                <span
-                                  className={`rounded-full px-3 py-0.5 text-sm font-semibold ${tagColorClass(event.tag)}`}
-                                >
-                                  {event.tag}
-                                </span>
-                              )}
-                            </div>
-                            {event.location && (
-                              <p className="mt-1 text-base text-gray-500">
-                                {event.location}
-                              </p>
+                      {dayEvents.map((event) => {
+                        const startTime = event.start_time
+                          ? normalizeTime(event.start_time)
+                          : ''
+                        const endTime = event.end_time
+                          ? normalizeTime(event.end_time)
+                          : ''
+
+                        return (
+                          <li
+                            key={event.id}
+                            className="flex flex-wrap items-start gap-3"
+                          >
+                            {(startTime || endTime) && (
+                              <div className="w-16 shrink-0">
+                                {startTime && (
+                                  <p className="text-base font-semibold text-text">
+                                    {startTime}
+                                  </p>
+                                )}
+                                {endTime && (
+                                  <p className="text-sm text-gray-400">
+                                    {endTime}
+                                  </p>
+                                )}
+                              </div>
                             )}
-                          </div>
-                        </li>
-                      ))}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-lg font-bold text-text">
+                                  {event.title}
+                                </p>
+                                {event.tag && (
+                                  <span
+                                    className={`rounded-full px-3 py-0.5 text-sm font-semibold ${tagColorClass(event.tag)}`}
+                                  >
+                                    {event.tag}
+                                  </span>
+                                )}
+                              </div>
+                              {event.location && (
+                                <p className="mt-1 text-base text-gray-500">
+                                  {event.location}
+                                </p>
+                              )}
+                            </div>
+                          </li>
+                        )
+                      })}
                     </ul>
                   )}
                 </li>

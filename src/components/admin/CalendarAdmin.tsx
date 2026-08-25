@@ -6,6 +6,7 @@ import { formatEventDate } from '../../lib/formatDateTime'
 import type { CalendarEvent } from '../calendar/Calendar'
 import { buttonClass } from '../ui/buttonStyles'
 import StateMessage from '../ui/StateMessage'
+import { normalizeTime } from '../../lib/formatTime'
 
 const TAG_SUGGESTIONS = ['Riksserien', 'Klubbmatcher', 'Träning']
 
@@ -90,8 +91,8 @@ export default function CalendarAdmin() {
     const payload = {
       title: form.title,
       event_date: form.event_date,
-      start_time: form.start_time || null,
-      end_time: form.end_time || null,
+      start_time: normalizeTime(form.start_time) || null,
+      end_time: normalizeTime(form.end_time) || null,
       location: form.location || null,
       tag: form.tag || null,
     }
