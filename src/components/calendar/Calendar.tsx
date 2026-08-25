@@ -266,10 +266,16 @@ export default function Calendar() {
                       {dayEvents.map((event) => (
                         <li key={event.id} className="flex flex-wrap items-start gap-3">
                           {(event.start_time || event.end_time) && (
-                            <div className="w-16 shrink-0 text-base font-semibold text-gray-700">
-                              {event.start_time && <p>{event.start_time}</p>}
+                            <div className="w-16 shrink-0">
+                              {event.start_time && (
+                                <p className="text-base font-semibold text-text">
+                                  {event.start_time}
+                                </p>
+                              )}
                               {event.end_time && (
-                                <p className="text-gray-400">{event.end_time}</p>
+                                <p className="text-sm text-gray-400">
+                                  {event.end_time}
+                                </p>
                               )}
                             </div>
                           )}
