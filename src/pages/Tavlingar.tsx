@@ -13,8 +13,12 @@ export default function Tavlingar() {
         className="my-6 w-full max-w-sm rounded-xl shadow-md"
       />
 
-      {/* PDF link — wired to Supabase Storage in a later step */}
-      <a href="#" className={buttonClass('primary', 'no-underline')}>
+      <a
+        href="/Kanalslaget_2026_anmalan.pdf"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={buttonClass('primary', 'no-underline')}
+      >
         Anmälningslista
       </a>
 

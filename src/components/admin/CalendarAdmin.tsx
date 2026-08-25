@@ -49,7 +49,7 @@ export default function CalendarAdmin() {
   async function loadEvents() {
     const { data, error } = await fetchTable<CalendarEvent>('calendar_events', {
       column: 'event_date',
-      ascending: false,
+      ascending: true,
     })
     setEvents(data)
     setListError(error)
