@@ -70,11 +70,20 @@ function getISOWeek(date: Date): number {
   return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
 }
 
+// Directional border-*-color utilities only (never the all-sides `border-{color}`
+// shorthand) so today's left accent border and the divider's top border never fight
+// over the same CSS property when combined on the same row.
 function dayRowClasses(isToday: boolean, weekday: number) {
-  if (isToday) return 'border-l-4 border-accent bg-accent/15'
+  if (isToday) return 'border-l-4 border-l-accent bg-accent/15'
   if (weekday === 0) return 'bg-red-50'
   if (weekday === 6) return 'bg-gray-50'
   return ''
+}
+
+// Thin top-border divider between rows; the first row gets none so it sits flush
+// under the month-nav header instead of double-lining the card edge.
+function dividerClass(index: number) {
+  return index > 0 ? 'border-t border-t-gray-200' : ''
 }
 
 function dayNumberClass(weekday: number) {
@@ -225,7 +234,7 @@ export default function Calendar() {
                 return (
                   <li
                     key={`week-${index}`}
-                    className="bg-gray-100 px-3 py-1 text-center text-xs font-semibold uppercase tracking-wide text-gray-500"
+                    className={`bg-gray-100 px-3 py-1 text-center text-xs font-semibold uppercase tracking-wide text-gray-500 ${dividerClass(index)}`}
                   >
                     v.{row.weekNumber}
                   </li>
@@ -239,7 +248,7 @@ export default function Calendar() {
               return (
                 <li
                   key={`day-${day}`}
-                  className={`flex items-start gap-4 px-3 py-2 ${dayRowClasses(isToday, weekday)}`}
+                  className={`flex items-start gap-4 px-3 py-2 ${dividerClass(index)} ${dayRowClasses(isToday, weekday)}`}
                 >
                   <div className="w-14 shrink-0 text-center">
                     <p
