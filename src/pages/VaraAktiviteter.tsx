@@ -11,8 +11,8 @@ export default function VaraAktiviteter() {
         <div className="card">
           <ul className="flex flex-col gap-2 text-lg">
             <li>
-              <ExternalLink href="https://www.sbhf.se/ligaservice/index.php/serie/index?parentId=8614">
-                Riksserien Division 3
+              <ExternalLink href="https://www.sbhf.se/ligaservice/index.php/serie/index?parentId=9238">
+                Riksserien Division 2
               </ExternalLink>
             </li>
             <li>
