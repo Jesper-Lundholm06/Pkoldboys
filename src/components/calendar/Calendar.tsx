@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 import StateMessage from '../ui/StateMessage'
+import { buttonClass } from '../ui/buttonStyles'
 import { normalizeTime } from '../../lib/formatTime'
+import { tagColorClass } from './tagColors'
+import CalendarEventForm from './CalendarEventForm'
+import CalendarEventModal from './CalendarEventModal'
 
 export type CalendarEvent = {
   id: number
@@ -16,18 +21,6 @@ export type CalendarEvent = {
 type AgendaRow =
   | { kind: 'week'; weekNumber: number }
   | { kind: 'day'; day: number; weekday: number }
-
-const TAG_COLORS: Record<string, string> = {
-  riksserien: 'bg-blue-100 text-blue-800',
-  klubbmatcher: 'bg-green-100 text-green-800',
-  träning: 'bg-gray-200 text-gray-800',
-}
-
-const DEFAULT_TAG_COLOR = 'bg-amber-100 text-amber-800'
-
-function tagColorClass(tag: string) {
-  return TAG_COLORS[tag.trim().toLowerCase()] ?? DEFAULT_TAG_COLOR
-}
 
 // start_time/end_time are free text ("12:00"/"12.00") — normalize to
 // minutes-since-midnight for sorting; missing/unparseable times sort last.
@@ -92,12 +85,26 @@ function dayNumberClass(weekday: number) {
 }
 
 export default function Calendar() {
+  const { isAdmin } = useAuth()
+
   const [cursor, setCursor] = useState(() => {
     const now = new Date()
     return { year: now.getFullYear(), month: now.getMonth() }
   })
   const [events, setEvents] = useState<CalendarEvent[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
+
+  // undefined = modal closed, null = modal open in create mode, an event = modal open
+  // in edit mode for that event.
+  const [modalEvent, setModalEvent] = useState<CalendarEvent | null | undefined>(
+    undefined,
+  )
+  const [actionError, setActionError] = useState<string | null>(null)
+
+  function refreshEvents() {
+    setReloadKey((key) => key + 1)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -127,7 +134,35 @@ export default function Calendar() {
     return () => {
       cancelled = true
     }
-  }, [cursor.year, cursor.month])
+  }, [cursor.year, cursor.month, reloadKey])
+
+  function handleSaved() {
+    setModalEvent(undefined)
+    refreshEvents()
+  }
+
+  async function handleDelete(id: number) {
+    if (!window.confirm('Ta bort händelsen?')) {
+      return
+    }
+
+    setActionError(null)
+    const { error: deleteError } = await supabase
+      .from('calendar_events')
+      .delete()
+      .eq('id', id)
+
+    if (deleteError) {
+      setActionError('Kunde inte ta bort händelsen just nu.')
+      return
+    }
+
+    if (modalEvent && modalEvent.id === id) {
+      setModalEvent(undefined)
+    }
+
+    refreshEvents()
+  }
 
   function goToPrevMonth() {
     setCursor(({ year, month }) =>
@@ -189,13 +224,31 @@ export default function Calendar() {
 
   return (
     <div className="card">
-      <button
-        type="button"
-        onClick={goToToday}
-        className="mb-3 text-base font-semibold text-primary hover:underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
-      >
-        Gå till idag
-      </button>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={goToToday}
+          className="text-base font-semibold text-primary hover:underline focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+        >
+          Gå till idag
+        </button>
+
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => setModalEvent(null)}
+            className={buttonClass('primary')}
+          >
+            + Ny händelse
+          </button>
+        )}
+      </div>
+
+      {isAdmin && actionError && (
+        <div className="mb-4">
+          <StateMessage variant="error">{actionError}</StateMessage>
+        </div>
+      )}
 
       <div className="flex items-center justify-between gap-4">
         <button
@@ -309,6 +362,24 @@ export default function Calendar() {
                                   {event.location}
                                 </p>
                               )}
+                              {isAdmin && (
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setModalEvent(event)}
+                                    className="min-h-9 rounded-md border-2 border-primary bg-white px-3 py-1 text-sm font-semibold text-primary hover:bg-gray-50 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                                  >
+                                    Ändra
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDelete(event.id)}
+                                    className="min-h-9 rounded-md border-2 border-danger bg-white px-3 py-1 text-sm font-semibold text-danger hover:bg-danger-light focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                                  >
+                                    Ta bort
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </li>
                         )
@@ -321,6 +392,20 @@ export default function Calendar() {
           </ul>
         )}
       </div>
+
+      {isAdmin && modalEvent !== undefined && (
+        <CalendarEventModal
+          title={modalEvent ? 'Ändra händelse' : 'Ny händelse'}
+          onClose={() => setModalEvent(undefined)}
+        >
+          <CalendarEventForm
+            key={modalEvent?.id ?? 'new'}
+            event={modalEvent}
+            onSaved={handleSaved}
+            onCancel={() => setModalEvent(undefined)}
+          />
+        </CalendarEventModal>
+      )}
     </div>
   )
 }
