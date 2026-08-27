@@ -1,21 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { fetchTable } from '../../lib/fetchTable'
 import type { Document } from '../../data/documents'
+import DocumentForm from '../documents/DocumentForm'
 import { buttonClass } from '../ui/buttonStyles'
 import StateMessage from '../ui/StateMessage'
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024
-
 export default function DocumentsAdmin() {
-  const [title, setTitle] = useState('')
-  const [category, setCategory] = useState('')
-  const [file, setFile] = useState<File | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
 
   const [documents, setDocuments] = useState<Document[] | null>(null)
@@ -34,55 +25,7 @@ export default function DocumentsAdmin() {
     loadDocuments()
   }, [])
 
-  function resetForm() {
-    setTitle('')
-    setCategory('')
-    setFile(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    setUploadError(null)
-    setUploadSuccess(null)
-
-    if (!file) {
-      setUploadError('Välj en PDF-fil.')
-      return
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      setUploadError('Filen är för stor (max 10 MB).')
-      return
-    }
-
-    setUploading(true)
-
-    const path = `${Date.now()}_${file.name}`
-    const { error: uploadErr } = await supabase.storage
-      .from('documents')
-      .upload(path, file)
-
-    if (uploadErr) {
-      setUploading(false)
-      setUploadError('Kunde inte ladda upp filen just nu.')
-      return
-    }
-
-    const { error: insertErr } = await supabase
-      .from('documents')
-      .insert({ title, file_path: path, category: category || null })
-
-    setUploading(false)
-
-    if (insertErr) {
-      setUploadError('Kunde inte spara dokumentet just nu.')
-      return
-    }
-
-    resetForm()
+  function handleUploaded() {
     setUploadSuccess('Dokumentet laddades upp')
     loadDocuments()
   }
@@ -116,62 +59,13 @@ export default function DocumentsAdmin() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="card flex max-w-xl flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="doc-title" className="label">
-            Titel
-          </label>
-          <input
-            id="doc-title"
-            type="text"
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="input"
-          />
-        </div>
+      <div className="card flex max-w-xl flex-col gap-4">
+        <DocumentForm onUploaded={handleUploaded} />
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="doc-category" className="label">
-            Kategori (valfritt)
-          </label>
-          <input
-            id="doc-category"
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="input"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label htmlFor="doc-file" className="label">
-            PDF-fil
-          </label>
-          <input
-            id="doc-file"
-            ref={fileInputRef}
-            type="file"
-            accept="application/pdf"
-            required
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="cursor-pointer text-lg text-gray-700 file:mr-4 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-base file:font-semibold file:text-white file:shadow-sm hover:file:brightness-110"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={uploading}
-          className={buttonClass('primary', 'self-start')}
-        >
-          {uploading ? 'Laddar upp…' : 'Ladda upp dokument'}
-        </button>
-
-        {uploadError && <StateMessage variant="error">{uploadError}</StateMessage>}
         {uploadSuccess && (
           <StateMessage variant="success">{uploadSuccess}</StateMessage>
         )}
-      </form>
+      </div>
 
       <div className="mt-8">
         {documents === null && listError === null && (
