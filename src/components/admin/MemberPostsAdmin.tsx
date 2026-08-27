@@ -1,18 +1,14 @@
 import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
 import { supabase } from '../../lib/supabase'
 import { fetchTable } from '../../lib/fetchTable'
 import { formatDateTime } from '../../lib/formatDateTime'
 import type { MemberPost } from '../../data/memberPosts'
+import MemberPostForm from '../member/MemberPostForm'
 import { buttonClass } from '../ui/buttonStyles'
 import StateMessage from '../ui/StateMessage'
 
 export default function MemberPostsAdmin() {
-  const [title, setTitle] = useState('')
-  const [body, setBody] = useState('')
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  const [editingPost, setEditingPost] = useState<MemberPost | null>(null)
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
 
   const [posts, setPosts] = useState<MemberPost[] | null>(null)
@@ -31,56 +27,18 @@ export default function MemberPostsAdmin() {
     loadPosts()
   }, [])
 
-  function resetForm() {
-    setEditingId(null)
-    setTitle('')
-    setBody('')
-  }
-
   function handleEdit(post: MemberPost) {
-    setEditingId(post.id)
-    setTitle(post.title)
-    setBody(post.body)
-    setSaveError(null)
+    setEditingPost(post)
     setSaveSuccess(null)
   }
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    setSaveError(null)
-    setSaveSuccess(null)
-    setSaving(true)
+  function handleCancelEdit() {
+    setEditingPost(null)
+  }
 
-    if (editingId) {
-      const { error } = await supabase
-        .from('member_posts')
-        .update({ title, body })
-        .eq('id', editingId)
-
-      setSaving(false)
-
-      if (error) {
-        setSaveError('Kunde inte uppdatera inlägget just nu.')
-        return
-      }
-
-      resetForm()
-      setSaveSuccess('Inlägget uppdaterades')
-      loadPosts()
-      return
-    }
-
-    const { error } = await supabase.from('member_posts').insert({ title, body })
-
-    setSaving(false)
-
-    if (error) {
-      setSaveError('Kunde inte spara inlägget just nu.')
-      return
-    }
-
-    resetForm()
-    setSaveSuccess('Inlägget sparades')
+  function handleSaved(mode: 'created' | 'updated') {
+    setEditingPost(null)
+    setSaveSuccess(mode === 'created' ? 'Inlägget sparades' : 'Inlägget uppdaterades')
     loadPosts()
   }
 
@@ -96,8 +54,8 @@ export default function MemberPostsAdmin() {
       return
     }
 
-    if (editingId === id) {
-      resetForm()
+    if (editingPost?.id === id) {
+      setEditingPost(null)
     }
 
     loadPosts()
@@ -105,60 +63,16 @@ export default function MemberPostsAdmin() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="card flex max-w-xl flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="post-title" className="label">
-            Rubrik
-          </label>
-          <input
-            id="post-title"
-            type="text"
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="input"
-          />
-        </div>
+      <div className="card flex max-w-xl flex-col gap-4">
+        <MemberPostForm
+          key={editingPost?.id ?? 'new'}
+          post={editingPost}
+          onSaved={handleSaved}
+          onCancel={handleCancelEdit}
+        />
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="post-body" className="label">
-            Text
-          </label>
-          <textarea
-            id="post-body"
-            required
-            rows={5}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            className="input"
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <button type="submit" disabled={saving} className={buttonClass('primary')}>
-            {saving
-              ? editingId
-                ? 'Uppdaterar…'
-                : 'Sparar…'
-              : editingId
-                ? 'Uppdatera inlägg'
-                : 'Spara inlägg'}
-          </button>
-
-          {editingId && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className={buttonClass('secondary')}
-            >
-              Avbryt
-            </button>
-          )}
-        </div>
-
-        {saveError && <StateMessage variant="error">{saveError}</StateMessage>}
         {saveSuccess && <StateMessage variant="success">{saveSuccess}</StateMessage>}
-      </form>
+      </div>
 
       <div className="mt-8">
         {posts === null && listError === null && (
