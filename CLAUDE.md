@@ -234,10 +234,10 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
   `hover:opacity-75`, en `sr-only`-text "(öppnas i ny flik)" för
   skärmläsare, `target="_blank"` + `rel="noopener noreferrer"` inbyggt i
   komponenten.
-- Footer: kontakt-mailto (`kontakt@pkoldboys.se`, PLACEHOLDER — byt till
-  klubbens riktiga adress) i guld (`text-accent` — OK kontrast 5.53:1 på
-  `primary`-mörkblå, till skillnad från guld-text-på-vitt som INTE klarar
-  AA), plus en `© 2026 PK Oldboys Bowling`-rad i `text-gray-300`.
+- Footer: kontakt-mailto (`pjexan01@gmail.com`) i guld (`text-accent` — OK
+  kontrast 5.53:1 på `primary`-mörkblå, till skillnad från guld-text-på-vitt
+  som INTE klarar AA), plus en `© 2026 PK Oldboys Bowling`-rad i
+  `text-gray-300`.
 - `@media (prefers-reduced-motion: reduce)` stänger av transitions globalt.
 
 ## Kända TODO / öppna punkter
@@ -257,9 +257,6 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
   och sätta miljövariablerna `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` i
   Netlifys UI (byggmiljön läser INTE `.env`-filen — den är gitignorad),
   samt peka domänen pkoldboys.se dit när klubben är redo.
-- ⚠️ Footerns kontakt-e-post (`kontakt@pkoldboys.se`) är en PLACEHOLDER —
-  byt till klubbens riktiga e-postadress i `src/components/layout/Footer.tsx`
-  när den finns.
 - ⚠️ Tabellen `matches` (i `supabase/schema.sql`) är INTE körd i databasen än
   (`PGRST205: Could not find table 'public.matches'`). Kör "Added in Step 4"-
   sektionen i SQL Editor, annars visar "Våra aktiviteter" felmeddelande i
