@@ -58,13 +58,14 @@ export default function EditableText({
   }
 
   return (
-    // flow-root contains the floated admin button so it never overlaps what follows.
+    // flow-root contains the (sm+) floated admin button so it never overlaps what follows.
     <div className="flow-root">
       {isAdmin && (
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className={buttonClass('primary', 'float-right mb-2 ml-4')}
+          // Mobile: own line above the text (full-width text). sm+: floated right.
+          className={buttonClass('primary', 'mb-3 sm:float-right sm:mb-2 sm:ml-4')}
         >
           Ändra
         </button>
