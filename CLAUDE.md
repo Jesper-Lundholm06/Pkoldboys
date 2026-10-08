@@ -227,14 +227,15 @@ primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
   mörk halvtransparent bakgrund, stänger vid bakgrundsklick/X/Escape,
   fokusfälla + återställer fokus vid stängning, `role="dialog"
   aria-modal="true"`) — INTE längre `target="_blank"` till en ny flik.
-- Externa länkar (Riksserien Division 3/6 på `VaraAktiviteter.tsx`, samt
+- Externa länkar (Riksserien Division 2, Division 8 och "alla divisioner"-
+  översikten på `VaraAktiviteter.tsx`, samt
   "Resultat" på `Tavlingar.tsx`) använder alla samma delade
   `ExternalLink.tsx`: marinblå (`text-primary`) understruken text + en
   liten inline SVG pil-ut-ikon (`aria-hidden`) efter texten,
   `hover:opacity-75`, en `sr-only`-text "(öppnas i ny flik)" för
   skärmläsare, `target="_blank"` + `rel="noopener noreferrer"` inbyggt i
   komponenten.
-- Footer: kontakt-mailto (`pjexan01@gmail.com`) i guld (`text-accent` — OK
+- Footer: kontakt-mailto (`pjexan0@gmail.com`) i guld (`text-accent` — OK
   kontrast 5.53:1 på `primary`-mörkblå, till skillnad från guld-text-på-vitt
   som INTE klarar AA), plus en `© 2026 PK Oldboys Bowling`-rad i
   `text-gray-300`.
