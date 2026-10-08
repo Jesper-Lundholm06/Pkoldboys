@@ -14,7 +14,7 @@ export default function Tavlingar() {
       />
 
       <a
-        href="/Kanalslaget_2026_anmalan_text.pdf"
+        href="/Kanalslaget_2027_anmalan_text.pdf"
         target="_blank"
         rel="noopener noreferrer"
         className={buttonClass('primary', 'no-underline')}
