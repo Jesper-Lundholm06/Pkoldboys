@@ -9,6 +9,7 @@
 -- NEWEST "Added in Step N" table + its policies (search for "Added in Step"
 -- below) — running the whole file again will error on already-existing
 -- tables/policies. Added in Step 4: "matches". Added in Step 12: "events".
+-- Added in Step 17: "site_content" (at the end of the file, safe to re-run).
 --
 -- Auth model assumed by the policies below:
 --   - One ADMIN account: admin@pkoldboys.se (full write access everywhere)
@@ -162,3 +163,33 @@ create policy "events_update_admin"
 create policy "events_delete_admin"
   on events for delete
   using ((auth.jwt() ->> 'email') = 'admin@pkoldboys.se');
+
+-- ---------------------------------------------------------------------
+-- Added in Step 17: site_content — key/value store for admin-editable
+-- single text blocks (rendered by EditableText, e.g. "intro" on Home,
+-- "contact" for the contact page). Self-contained and safe to re-run on
+-- its own: table + RLS + policies (dropped before being re-created).
+-- Seed rows are data, not schema, and are intentionally not included.
+-- ---------------------------------------------------------------------
+
+create table if not exists site_content (
+  key text primary key,
+  value text not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table site_content enable row level security;
+
+-- site_content: public read, admin-only write
+drop policy if exists "site_content_select_public" on site_content;
+create policy "site_content_select_public"
+  on site_content for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "site_content_write_admin" on site_content;
+create policy "site_content_write_admin"
+  on site_content for all
+  to authenticated
+  using ((auth.jwt() ->> 'email') = 'admin@pkoldboys.se')
+  with check ((auth.jwt() ->> 'email') = 'admin@pkoldboys.se');

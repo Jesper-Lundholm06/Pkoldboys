@@ -30,6 +30,9 @@ domän pkoldboys.se.
 Steg 12 (tillägg utöver ursprungsplanen): "Kommande händelser" — enkel
 kalender/händelselista på Home + admin-hantering. Klart, se Mappstruktur +
 Kända TODO (SQL-tabellen är inte körd i databasen än).
+Steg 17 (tillägg): redigerbara enskilda textblock — tabellen `site_content`
+(key/value) + generisk `EditableText`-komponent. Används live för `intro` på
+Home; raden `contact` finns redan i databasen, redo för kommande kontaktsida.
 
 ## Mappstruktur
 ```
@@ -53,10 +56,25 @@ src/
                  händelser (även passerade, dämpade med `opacity-60` +
                  "(passerad)"-text) sorterat stigande på `event_date`, så
                  admin kan redigera/ta bort gamla poster.
+    content/     EditableText.tsx — generiskt redigerbart textblock, styrs
+                 helt av prop `contentKey` (inget nyckelnamn hårdkodat).
+                 Läser `value` ur `site_content` för nyckeln och renderar via
+                 `parseInlineText` (tom rad = nytt stycke, enkel radbrytning =
+                 `<br>`, `[label](url)`-länkar: http(s) via `ExternalLink`,
+                 `mailto:` som vanlig understruken länk). Valfri `fallback`-
+                 text (samma syntax) visas under laddning/vid fel/saknad rad
+                 → inget layouthopp, ingen krasch; senast kända värde cachas
+                 per nyckel under sessionen. Admin (`isAdmin`) ser en liten
+                 "Ändra"-knapp (samma stil som nyhetskortens) som öppnar
+                 delade `CalendarEventModal` med textarea (råtext inkl.
+                 länksyntax) + hjälptext om `[text](länk)`; sparar med
+                 `upsert` (key, value, updated_at) — skrivskydd via RLS.
+                 Icke-admin ser aldrig någon kontroll.
   context/      AuthContext.tsx (useAuth: session/user/loading/isAdmin/signIn/
                 signOut — rörs ALDRIG i designsteg),
                 ToastContext.tsx (useToast — se Designtokens)
-  pages/        Home (Kommande händelser + nyheter, båda från DB), Tavlingar
+  pages/        Home (introtext via `<EditableText contentKey="intro">` +
+                Kommande händelser + nyheter, alla från DB), Tavlingar
                 (affisch + Anmälningslista/Resultat), VaraAktiviteter
                 (Riksserien + matcher, båda i `.card`), Bilder (bucket
                 "gallery", per album, klick öppnar Lightbox — INGEN separat
@@ -73,12 +91,22 @@ src/
                 nyheter/medlemsinlägg, `formatEventDate` = sv-SE "15
                 augusti"-format — används av EventsAdmin.tsx, RÖR EJ,
                 `getEventDayMonth` = separat {day, month}-par för Homes
-                datumblock, se Designtokens)
+                datumblock, se Designtokens),
+                parseInlineText.ts (liten beroendefri parser: stycken på
+                tomma rader, radbrytningar, och ENDAST `[label](url)`-länkar
+                med `http://`/`https://`/`mailto:` — allt annat, inkl. övrig
+                Markdown/HTML/`javascript:`, förblir ren text som React
+                escapar → ingen HTML-injektion)
   router/       AppRouter.tsx
   App.tsx, main.tsx (<App/> i <AuthProvider>), index.css
 public/         _redirects (Netlify SPA-fallback: "/* /index.html 200",
                 kopieras automatiskt av Vite till dist/ vid build)
-supabase/       schema.sql — DB-schema + RLS, körs manuellt i SQL Editor
+supabase/       schema.sql — DB-schema + RLS, körs manuellt i SQL Editor.
+                `site_content` (Steg 17, sist i filen): `key` text PK,
+                `value` text, `updated_at` timestamptz; läs för anon+
+                authenticated, skriv (`for all`) bara admin-e-posten. Blocket
+                är fristående och säkert att köra om (`drop policy if exists`).
+                Seed-rader (`intro`, `contact`) är data och finns INTE i filen.
 .env / .env.example   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 netlify.toml    build-kommando "npm run build", publish "dist", samma
                 SPA-redirect som public/_redirects (bälte+hängslen)
