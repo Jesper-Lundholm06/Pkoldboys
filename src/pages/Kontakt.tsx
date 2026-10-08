@@ -8,6 +8,11 @@ import ContactForm from '../components/contacts/ContactForm'
 // Reuses the modal built for the inline calendar/news admin controls (Steps 13f/14)
 // so all inline-admin features share one accessible modal implementation.
 import CalendarEventModal from '../components/calendar/CalendarEventModal'
+import EditableText from '../components/content/EditableText'
+
+// Shown until site_content "contact" has loaded (or if it can't be fetched).
+const CONTACT_FALLBACK =
+  'Har du frågor eller vill veta mer om PK Oldboys? Hör gärna av dig via telefon eller mejl – vi hjälper dig så gott vi kan.'
 
 const contactLinkClass =
   'inline-flex min-h-11 items-center gap-2 text-lg font-medium text-primary underline underline-offset-2 transition-opacity hover:opacity-75'
@@ -96,7 +101,9 @@ export default function Kontakt() {
     <div>
       <h1>Kontakt</h1>
 
-      <section>
+      <EditableText contentKey="contact" fallback={CONTACT_FALLBACK} />
+
+      <section className="mt-8">
         {isAdmin && (
           <div className="mb-4 flex justify-end">
             <button
