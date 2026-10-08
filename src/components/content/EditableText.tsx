@@ -124,7 +124,6 @@ function EditableTextForm({ contentKey, initialValue, onSaved, onCancel }: Edita
   const [saveError, setSaveError] = useState<string | null>(null)
 
   const fieldId = `editable-text-${contentKey}`
-  const hintId = `${fieldId}-hint`
 
   async function handleSubmit(formEvent: FormEvent) {
     formEvent.preventDefault()
@@ -160,14 +159,8 @@ function EditableTextForm({ contentKey, initialValue, onSaved, onCancel }: Edita
           rows={8}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          aria-describedby={hintId}
           className="input"
         />
-        <p id={hintId} className="text-base text-gray-700">
-          Länkar skrivs som <code>[text](länk)</code>, t.ex.{' '}
-          <code>[Fix Bowlingcenter](https://fixbowlingcenter.se)</code> eller{' '}
-          <code>[Maila oss](mailto:namn@exempel.se)</code>. En tom rad ger nytt stycke.
-        </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
