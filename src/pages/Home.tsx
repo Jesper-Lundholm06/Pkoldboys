@@ -12,6 +12,11 @@ import NewsForm from '../components/news/NewsForm'
 // Reuses the modal built for the inline calendar admin controls (Step 13f) so both
 // inline-admin features share one accessible modal implementation.
 import CalendarEventModal from '../components/calendar/CalendarEventModal'
+import EditableText from '../components/content/EditableText'
+
+// Shown until site_content "intro" has loaded (or if it can't be fetched).
+const INTRO_FALLBACK =
+  'Föreningen bildad 1982 och har idag ca 25 aktiva utövare. PK Oldboys spelar senior bowling i Söderköping på [Fix Bowlingcenter](https://fixbowlingcenter.se) tisdagar 10.00 samt fredagar 12.00.'
 
 // event_time is free text ("16:00", "16.00", "9.00" …) — normalize to
 // minutes-since-midnight for sorting; missing/unparseable times sort last.
@@ -111,18 +116,7 @@ export default function Home() {
         className="my-8 w-full rounded-xl shadow-md"
       />
 
-      <p className="text-lg leading-relaxed text-gray-700">
-        Föreningen bildad 1982 och har idag ca 25 aktiva utövare. PK Oldboys
-        spelar senior bowling i Söderköping på{' '}
-        <a
-          href="https://fixbowlingcenter.se"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Fix Bowlingcenter
-        </a>{' '}
-        tisdagar 9.00 och 10.30 samt fredagar 12.00.
-      </p>
+      <EditableText contentKey="intro" fallback={INTRO_FALLBACK} />
 
       <section className="mt-12">
         <h2>Kommande händelser</h2>
