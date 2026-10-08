@@ -102,6 +102,11 @@ export default function Sidebar({ isOpen, onNavigate }: SidebarProps) {
               Övrigt
             </NavLink>
           </li>
+          <li>
+            <NavLink to="/kontakt" className={navLinkClass} onClick={onNavigate}>
+              Kontakt
+            </NavLink>
+          </li>
         </ul>
 
         {user ? (

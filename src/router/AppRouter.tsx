@@ -7,6 +7,7 @@ import VaraAktiviteter from '../pages/VaraAktiviteter'
 import Bilder from '../pages/Bilder'
 import Dokument from '../pages/Dokument'
 import Ovrigt from '../pages/Ovrigt'
+import Kontakt from '../pages/Kontakt'
 import LoggaIn from '../pages/LoggaIn'
 import Medlem from '../pages/Medlem'
 import Admin from '../pages/Admin'
@@ -22,6 +23,7 @@ export default function AppRouter() {
           <Route path="/bilder" element={<Bilder />} />
           <Route path="/dokument" element={<Dokument />} />
           <Route path="/ovrigt" element={<Ovrigt />} />
+          <Route path="/kontakt" element={<Kontakt />} />
           <Route path="/logga-in" element={<LoggaIn />} />
           <Route
             path="/medlem"
