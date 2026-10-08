@@ -136,8 +136,11 @@ Palett: navy + white + gray, med guld enbart som tunn accent.
   (5.53:1, AA-godkänt): används så för footerns kontakt-länk och
   "INLOGGAD SOM ADMIN"-etiketten i sidebaren.
 - `danger` `#b3261e` (+ `danger-light` `#fbeceb`) — destruktiva "Ta bort".
-- Grå: Tailwinds inbyggda `gray`-skala (`gray-50`…`gray-700`) för brödtext/
-  datum/kanter/subtila hover-bakgrunder.
+- Grå: Tailwinds `gray`-skala, men `gray-400`…`gray-800` är OMDEFINIERADE i
+  `tailwind.config.js` till samma nästan-svarta brödtextton som `text`
+  (`#1a1a1a`, ~16:1 på off-white = WCAG AAA) — de används bara som text på
+  ljus botten (brödtext, datum, tomlägen). `gray-50`…`gray-300` är orörda
+  (bakgrunder, kanter, ljus text på marinblått i sidebar/footer).
 - `background` (sidcanvas) `#f7f6f3` off-white. Kort: `bg-white` + `.card`
   (`shadow-md`, `rounded-lg`, ingen kant).
 - `text` `#1a1a1a`.
@@ -145,8 +148,8 @@ Palett: navy + white + gray, med guld enbart som tunn accent.
   `text-2xl` (24px) med tunn guldunderstrykning, brödtext 18px.
 
 Kontrast: alla kombinationer verifierade mot WCAG AA (vit på primary 11.65:1,
-primary på vitt 11.65:1, gray-500 på vitt 4.83:1, gray-700 10.31:1, danger
-6.54:1). Guld klarar inte AA som textfärg → används aldrig så.
+primary på vitt 11.65:1, brödtext `#1a1a1a` (gray-400…800) 16.1:1 på
+off-white / 17.4:1 på vitt, danger 6.54:1). Guld klarar inte AA som textfärg → används aldrig så.
 
 **Delade UI-primitiver:**
 - `buttonStyles.ts` → `buttonClass('primary'|'secondary'|'danger', extra?)`.
