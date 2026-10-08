@@ -16,7 +16,7 @@ import EditableText from '../components/content/EditableText'
 
 // Shown until site_content "intro" has loaded (or if it can't be fetched).
 const INTRO_FALLBACK =
-  'Föreningen bildad 1982 och har idag ca 25 aktiva utövare. PK Oldboys spelar senior bowling i Söderköping på [Fix Bowlingcenter](https://fixbowlingcenter.se) tisdagar 10.00 samt fredagar 12.00.'
+  'Föreningen bildad 1982 och har idag ca 25 aktiva utövare. PK Oldboys spelar senior bowling i Söderköping på Fix Bowlingcenter tisdagar 10.00 samt fredagar 12.00.'
 
 // event_time is free text ("16:00", "16.00", "9.00" …) — normalize to
 // minutes-since-midnight for sorting; missing/unparseable times sort last.

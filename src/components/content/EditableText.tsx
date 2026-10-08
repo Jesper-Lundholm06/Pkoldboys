@@ -58,7 +58,18 @@ export default function EditableText({
   }
 
   return (
-    <div>
+    // flow-root contains the floated admin button so it never overlaps what follows.
+    <div className="flow-root">
+      {isAdmin && (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className={buttonClass('primary', 'float-right mb-2 ml-4')}
+        >
+          Ändra
+        </button>
+      )}
+
       <div className="flex flex-col gap-4">
         {parseInlineText(text).map((paragraph, paragraphIndex) => (
           <p key={paragraphIndex} className={className}>
@@ -85,18 +96,6 @@ export default function EditableText({
           </p>
         ))}
       </div>
-
-      {isAdmin && (
-        <div className="mt-3">
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="min-h-9 rounded-md border-2 border-primary bg-white px-3 py-1 text-sm font-semibold text-primary hover:bg-gray-50 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
-          >
-            Ändra
-          </button>
-        </div>
-      )}
 
       {isAdmin && editing && (
         <CalendarEventModal title="Ändra text" onClose={() => setEditing(false)}>
