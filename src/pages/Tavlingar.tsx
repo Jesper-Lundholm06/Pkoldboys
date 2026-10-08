@@ -1,6 +1,6 @@
 import { buttonClass } from '../components/ui/buttonStyles'
 import ExternalLink from '../components/ui/ExternalLink'
-import affisch from '../assets/affish.png'
+import affisch from '../assets/Kanalslaget_2027.png'
 
 export default function Tavlingar() {
   return (
@@ -9,7 +9,7 @@ export default function Tavlingar() {
 
       <img
         src={affisch}
-        alt="Tävlingsaffisch: Kanalslaget 2025"
+        alt="Tävlingsaffisch: Kanalslaget 2027"
         className="my-6 w-full max-w-sm rounded-xl shadow-md"
       />
 
