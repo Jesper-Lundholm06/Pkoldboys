@@ -6,13 +6,17 @@ import { useToast } from '../context/ToastContext'
 import { buttonClass } from '../components/ui/buttonStyles'
 import StateMessage from '../components/ui/StateMessage'
 
+// The two shared Supabase accounts. Users only type a code (= the account's password,
+// validated server-side by Supabase); we try the member account first, then admin.
+const MEMBER_EMAIL = 'medlem@pkoldboys.se'
+const ADMIN_EMAIL = 'admin@pkoldboys.se'
+
 export default function LoggaIn() {
   const { user, loading, isAdmin, signIn } = useAuth()
   const navigate = useNavigate()
   const { showToast } = useToast()
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -25,16 +29,28 @@ export default function LoggaIn() {
     setError(null)
     setSubmitting(true)
 
-    const { data, error } = await signIn(email, password)
+    let result = await signIn(MEMBER_EMAIL, code)
+
+    // Only fall through to the admin account on wrong credentials (HTTP 400), not on
+    // network/server errors.
+    if (result.error && result.error.status === 400) {
+      result = await signIn(ADMIN_EMAIL, code)
+    }
 
     setSubmitting(false)
 
+    const { data, error } = result
+
     if (error || !data.user) {
-      setError('Fel e-post eller lösenord.')
+      setError(
+        error && error.status !== 400
+          ? 'Kunde inte logga in just nu. Försök igen om en stund.'
+          : 'Fel kod, försök igen.',
+      )
       return
     }
 
-    const loggedInAsAdmin = data.user.email === 'admin@pkoldboys.se'
+    const loggedInAsAdmin = data.user.email === ADMIN_EMAIL
     showToast(loggedInAsAdmin ? 'Välkommen, admin!' : 'Välkommen, medlem!')
     navigate(loggedInAsAdmin ? '/admin' : '/medlem')
   }
@@ -46,29 +62,23 @@ export default function LoggaIn() {
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <label htmlFor="login-email" className="label">
-              E-post
+            <label htmlFor="login-code" className="label">
+              Kod
             </label>
+            <p id="login-code-hint" className="text-lg text-gray-700">
+              Skriv din kod för att logga in.
+            </p>
             <input
-              id="login-email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="login-password" className="label">
-              Lösenord
-            </label>
-            <input
-              id="login-password"
+              id="login-code"
               type="password"
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              aria-describedby="login-code-hint"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
               className="input"
             />
           </div>
