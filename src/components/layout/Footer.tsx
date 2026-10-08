@@ -8,8 +8,8 @@ export default function Footer() {
         <p>Swish 123-132 81 78</p>
         <p>
           Kontakt:{' '}
-          <a href="mailto:pjexan01@gmail.com" className="text-accent underline-offset-2 hover:text-white">
-            pjexan01@gmail.com
+          <a href="mailto:pjexan0@gmail.com" className="text-accent underline-offset-2 hover:text-white">
+            pjexan0@gmail.com
           </a>
         </p>
       </div>
