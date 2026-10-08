@@ -16,7 +16,7 @@ export default function VaraAktiviteter() {
               </ExternalLink>
             </li>
             <li>
-              <ExternalLink href="https://www.sbhf.se/ligaservice/index.php/serie/index?series=3">
+              <ExternalLink href="https://www.sbhf.se/ligaservice/index.php/serie/index?parentId=9249">
                 Riksserien Division 8
               </ExternalLink>
             </li>
